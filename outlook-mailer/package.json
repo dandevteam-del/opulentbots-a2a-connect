@@ -1,0 +1,14 @@
+{
+  "name": "outlook-mailer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Let an AI assistant send email from your own Outlook / Microsoft 365 mailbox, in your own HTML template.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "bin": { "outlook-mailer": "mailer.mjs" },
+  "scripts": { "login": "node mailer.mjs login", "mcp": "node mcp-server.mjs" },
+  "dependencies": {
+    "@azure/msal-node": "6.0.1",
+    "@modelcontextprotocol/sdk": "1.27.1"
+  }
+}

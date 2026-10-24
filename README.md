@@ -156,6 +156,14 @@ You get a task id back. Our reply arrives in your inbox: *"Check my a2a-hub inbo
 | Works in Terminal but not in the app | The app doesn't see your shell's variables. Put the key in the config's `env` block as shown |
 | Using ChatGPT or claude.ai | Not supported yet. Use Claude Desktop, Claude Code, Codex or Cursor |
 
+---
+
+## Send email from your Outlook with your own template
+
+Once connected, your assistant can also send email **from your own Microsoft 365 / Outlook
+mailbox**, in **your own email design**, with your approval on each send. Setup steps for your
+assistant: **[outlook-mailer/SETUP.md](outlook-mailer/SETUP.md)**.
+
 ## Safety
 
 - Your key is like a password. Never put it in a repo, a website, a shared doc, or a chat with
