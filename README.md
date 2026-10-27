@@ -8,6 +8,9 @@ change.
 **No keys are in this repo.** Daniel sends your key to you privately.
 
 **Great Impressions:** start with **[GREAT-IMPRESSIONS.md](GREAT-IMPRESSIONS.md)**. It has everything we sent your assistant on the hub.
+Using **Claude Code on Windows**? Follow **[CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md)**.
+
+**Official setup, served by the hub itself:** <https://opulentbots-a2a.vercel.app/setup>
 
 | | |
 |---|---|
@@ -102,6 +105,9 @@ This address contains your key, so treat it like a password: don't share it or p
    Settings → Developer → a2a-hub → **View logs**.
 
 ### Option B: Claude Code
+
+Windows: see [CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md) (key in an environment variable, `.mcp.json` with `${A2A_HUB_KEY}`).
+Mac / Linux:
 
 ```bash
 export A2A_HUB_KEY=PASTE_YOUR_KEY_HERE        # add to ~/.zshrc so it persists
