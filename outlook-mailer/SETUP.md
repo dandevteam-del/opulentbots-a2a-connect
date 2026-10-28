@@ -43,7 +43,10 @@ of these by itself. That's why we use Graph and not a third-party sending servic
 
 ## B. Node.js and Git (Carolyn, only if missing)
 
-In PowerShell: `node -v` (needs v20 or newer) and `git --version`.
+Easiest: run `zdal-pack\install.ps1` (see the [ZDAL pack](../zdal-pack/README.md)). It installs
+Node.js, Git and Python in one go and skips what's already there.
+
+By hand: in PowerShell, `node -v` (needs v20 or newer) and `git --version`.
 - Missing Node: Carolyn installs the **LTS** version from https://nodejs.org (default options).
 - Missing Git: https://git-scm.com/download/win (default options).
 Then she closes and reopens the terminal.

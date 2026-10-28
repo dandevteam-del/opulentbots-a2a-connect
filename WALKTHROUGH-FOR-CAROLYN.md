@@ -31,6 +31,11 @@ follow them. Read the **"Say"** parts to her almost word for word.
 >
 > It's 5 short parts. You'll type your own passwords. I'll never ask you for them. Ready?"
 
+**Before Part 1, check her PC has the programs** (assistant): run
+`zdal-pack\install.ps1`. It adds Node.js, Git and Python if they're missing.
+> **Say:** "I'm installing a few free programs your assistant needs. If Windows asks 'Do you want to
+> allow this app to make changes?', click **Yes**."
+
 **What she needs nearby:**
 - her **QuickBooks login** (email and password)
 - her **phone**, for security codes

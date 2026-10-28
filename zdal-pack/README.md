@@ -22,7 +22,23 @@ automation, Carolyn does that step by hand.
 
 ## 1. Set up (assistant, about 5 minutes)
 
-Do the hub connection first ([CLAUDE-CODE-WINDOWS.md](../CLAUDE-CODE-WINDOWS.md)). Then:
+Do the hub connection first ([CLAUDE-CODE-WINDOWS.md](../CLAUDE-CODE-WINDOWS.md)).
+
+**Install what's missing, all at once.** The kit needs **Node.js** and **Git**. **Python** is
+optional, but you'll want it for odd jobs like reading a PDF. **Edge, PowerShell and Claude Code are
+already there.** **Playwright needs no separate install**: it downloads itself the first time and
+drives Edge. One script installs everything that's missing, with Windows' own installer (winget).
+Carolyn clicks **Yes** if Windows asks:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "$HOME\opulentbots-a2a-connect\zdal-pack\install.ps1"
+```
+
+Then close every terminal, open a new one, and continue. (No repo yet? Git comes from the script, so
+download https://github.com/dandevteam-del/opulentbots-a2a-connect/raw/main/zdal-pack/install.ps1
+and run that file first.)
+
+Then:
 
 ```powershell
 cd $HOME\opulentbots-a2a-connect          # git clone it there first if it's missing

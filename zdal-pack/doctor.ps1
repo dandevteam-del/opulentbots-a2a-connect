@@ -10,8 +10,10 @@ function Has($cmd) { [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 Write-Host "`nZDAL pack doctor  $(Get-Date -Format 'yyyy-MM-dd HH:mm')`n"
 
 Write-Host "Tools"
-if (Has node) { $v = (node -v); if ([int]($v -replace '^v(\d+).*','$1') -ge 20) { Pass "Node.js" $v } else { Todo "Node.js $v" "install the LTS from https://nodejs.org (needs v20+)" } } else { Todo "Node.js" "install the LTS from https://nodejs.org" }
-if (Has git)    { Pass "Git" ((git --version) -replace 'git version ','') } else { Todo "Git" "install from https://git-scm.com/download/win" }
+if (Has node) { $v = (node -v); if ([int]($v -replace '^v(\d+).*','$1') -ge 20) { Pass "Node.js" $v } else { Todo "Node.js $v" "install the LTS from https://nodejs.org (needs v20+)" } } else { Todo "Node.js" "run install.ps1 (or install the LTS from https://nodejs.org)" }
+$py = $false; if (Has python) { $pv = (& python --version 2>&1) -join ""; $py = $pv -match "Python 3" }
+if ($py) { Pass "Python" "$pv (optional)" } else { Write-Host "  --    Python  not installed (optional; install.ps1 adds it)" -ForegroundColor DarkGray }
+if (Has git)    { Pass "Git" ((git --version) -replace 'git version ','') } else { Todo "Git" "run install.ps1 (or install from https://git-scm.com/download/win)" }
 if (Has claude) { Pass "Claude Code" (claude --version) } else { Todo "Claude Code" "not on PATH" }
 $edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($edge) { Pass "Microsoft Edge" "(the browser the agent drives)" } else { Todo "Microsoft Edge" "install Edge, or change --browser in the setup to chrome" }
