@@ -22,6 +22,7 @@ packages: Microsoft's sign-in library `@azure/msal-node` 6.0.1 and the MCP SDK
 | H. Test, then the first real send | You, with her approval | 5 min |
 | I. Report done on the hub | You | 1 min |
 | J. Make every email look like Great Impressions | You, with her approval | 20 min |
+| K. Her "Quick question..." template, set up exactly | You and Carolyn | 15 min |
 
 ---
 
@@ -250,6 +251,70 @@ do-not-email list, no repeat email to one person within 3 days, and the daily li
 **One limit to know:** the kit sends **new** emails. It doesn't reply inside an existing Outlook
 conversation. For a reply in the same thread, Carolyn clicks Reply in Outlook, or you send a new
 email with `Re: <the original subject>`.
+
+## K. Carolyn's "Quick question..." template, set up exactly
+
+Carolyn sent her template on Oct 28 (the email "Quick question..."). It's now built for you as
+**`templates\quick-question.html`**: her words exactly as she wrote them, in an Outlook-safe layout
+(tables, inline styles, 600px wide on a computer, the four service boxes stack on a phone), with her
+logo and colors, the "Whatever you're planning next" band, the four services, and her address
+footer. Run `git pull` to get it.
+
+### K1. Check it matches her design (with Carolyn, 5 min)
+
+1. `node mailer.mjs preview --template quick-question --vars templates\quick-question.vars.json`,
+   then open `previews\quick-question.html` in Edge.
+2. Put it next to **her PDF of the template** (ask Carolyn for it if you don't have it). Check the
+   colors, the order of the sections, and any photos.
+3. If her PDF has photos for the four services: ask her for the image files, host them on her website,
+   and add each one above its service name as
+   `<img src="https://…" width="252" alt="Retractable banners" style="display:block;width:100%;max-width:252px;height:auto;border:0;">`.
+   Never link to an image on her computer: customers can't see those.
+4. **One line was added that wasn't in her draft:** at the bottom, *"Not interested? Reply 'stop'
+   and we won't email you again."* US law (CAN-SPAM) requires a way to opt out of marketing emails.
+   Show it to Carolyn. She can change the wording, but some opt-out line has to stay. When someone
+   replies "stop", run `mail_suppress` on their address the same day.
+5. Change anything she asks for, preview again, and stop when she says **"that's it."**
+
+### K2. Send it with the kit (you)
+
+- **Field:** `first_name`. Use the person's first name, or `there` when you don't know it ("Hi there,",
+  like her original).
+- **Test first:** `node mailer.mjs test --template quick-question --vars templates\quick-question.vars.json --subject "Quick question..."`.
+  Carolyn checks it in Outlook on her computer and her phone.
+- **Real sends:** one email per person (so each gets their own name), with her OK on the list first.
+  The kit allows 50 a day and won't email anyone twice within 3 days.
+- **More than about 50 people** (for example, all her past customers from QuickBooks): that's a
+  campaign. Tell Carolyn it belongs in a mailing service (Mailchimp, Constant Contact). Mass mail
+  from her own mailbox can get greatimpress.com blocked. The same HTML file can be pasted into
+  those services.
+- Add it to `templates\README.md`: *quick-question: friendly check-in to past and new contacts,
+  asking what's coming up. Field: first_name.*
+
+### K3. Put it inside Outlook for Carolyn's own use (optional, 5 min)
+
+So she can also send it by hand from Outlook. Find out which Outlook she uses on her PC: **classic
+Outlook** has a **File** tab at the top left; the **new Outlook** has a "New Outlook" switch at the
+top right and no File tab.
+
+**Classic Outlook (Windows), as an Outlook template (.oft):**
+1. Open `previews\quick-question.html` in Edge (made with `first_name` = `there`, so it says "Hi there,").
+2. Click in the page, press **Ctrl+A** (select all), then **Ctrl+C** (copy).
+3. In Outlook: **Home → New Email**. Click in the message body and press **Ctrl+V** (paste).
+   The design, colors and logo come with it.
+4. Subject: **Quick question...** Leave the **To** box empty.
+5. **File → Save As →** "Save as type": **Outlook Template (*.oft)** → name it **Quick question** → **Save**.
+6. To use it later: **Home → New Items → More Items → Choose Form → Look In: "User Templates in File
+   System" → Quick question → Open**. Type the person's address and change "there" to their name.
+
+**New Outlook / Outlook on the web:** look for a "save as template" option in the message's **…**
+(more options) menu. If there isn't one, the "My templates" feature keeps text only and would lose
+her design. In that case, use the kit (K2) for this email, or repeat steps 1 to 3 each time she
+wants to send it by hand.
+
+**When done:** reply on hub task `df66f974-055d-4cfc-a211-63bf75fbbe6d`: *"quick-question template
+approved by Carolyn, test checked on computer and phone, opt-out line: <kept / her wording>, saved
+in Outlook: <classic .oft / not needed>."*
 
 ## Troubleshooting
 
