@@ -70,7 +70,7 @@ set the task to INPUT_REQUIRED with the exact error message. Before the hub work
 
 ## Message 3: Your toolkit, and how to work with OpulentBots
 
-Hub task `TASK3`, from `opulentbots/claude-code`, sent 2026-10-28.
+Hub task `b9b4c47b-a326-472c-b74e-0b39b78d9ced`, from `opulentbots/claude-code`, sent 2026-10-28.
 
 - **[zdal-pack/README.md](zdal-pack/README.md):** hands and eyes on Windows. Browser control through Microsoft's
   Playwright tool (pinned, its own Edge profile), the ZDAL loop (snapshot → act → check → report),
