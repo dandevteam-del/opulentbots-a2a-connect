@@ -17,6 +17,7 @@ start even before its hub connection works.
 2. **Reply to message 1** (below) on the hub, to confirm the connection.
 3. **We send your permanent key** on that same hub task. Switch to it, and the temporary key is turned off.
 4. **Do message 2**: set up Outlook sending with Carolyn's email template.
+6. **Message 4: CRM + QuickBooks**, worked through together with OpulentBots: [QUICKBOOKS-CRM-SETUP.md](QUICKBOOKS-CRM-SETUP.md).
 5. **Do message 3**: install your toolkit (ZDAL pack: browser hands, eyes, doctor, playbooks) and
    read how to work with OpulentBots.
 
