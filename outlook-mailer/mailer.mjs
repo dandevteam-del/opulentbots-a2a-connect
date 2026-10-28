@@ -9,7 +9,9 @@
 //   node mailer.mjs whoami                        which mailbox is signed in
 //   node mailer.mjs templates                     list templates and the {{fields}} each one needs
 //   node mailer.mjs preview  --template t --vars v.json [--subject s]      writes previews/<t>.html to open
+//   node mailer.mjs preview  --text note.txt                       a plain note, wrapped in templates/_shell.html
 //   node mailer.mjs send     --template t --vars v.json --to a@b.com --subject s [--cc ..] [--bcc ..] [--attach f ...] --yes
+//   node mailer.mjs send     --text note.txt --to a@b.com --subject s --yes      quick note, branded by the shell
 //   node mailer.mjs test     --template t --vars v.json [--subject s]      sends to yourself only
 //   node mailer.mjs history  [--to a@b.com]          what was sent, to whom, when
 //   node mailer.mjs suppress a@b.com|@domain.com     never email this address (or domain) again
@@ -111,8 +113,25 @@ export function render(name, vars = {}) {
   for (const m of html.matchAll(NOTE)) { out += fill(html.slice(last, m.index)) + m[0]; last = m.index + m[0].length; }
   return out + fill(html.slice(last));
 }
-export function preview(name, vars = {}) {
-  const html = render(name, vars);
+// ── the shell: quick notes look like the brand too ────────────────────────────
+// templates/_shell.html is her email design with the middle cut out: header and footer kept, and
+// {{{body_html}}} where the message goes. Any plain note (a reply, a quick update) is dropped into
+// it, so every email from the assistant looks like hers, not just the big templated ones. The
+// footer IS the signature, so a typed sign-off ("Thanks, Carolyn") at the end is removed to avoid
+// signing twice. Same approach OpulentBots uses for its own brands.
+const SIGNOFF = /\n\s*(?:thanks|thank you|best|best regards|regards|kind regards|warm regards|sincerely|cheers)[,!.]?\s*(?:\n.*){0,3}\s*$/i;
+export function shell(text, vars = {}) {
+  if (!fs.existsSync(path.join(TPL_DIR, "_shell.html"))) throw new Error('No templates/_shell.html yet. Make it from the owner\'s template (SETUP.md, part J), or send with a template instead.');
+  const body = String(text || "").replace(/\r/g, "").trim().replace(SIGNOFF, "").trim();
+  if (!body) throw new Error("The note is empty");
+  const body_html = body.split(/\n\s*\n/).map((p) =>
+    `<p style="margin:0 0 16px 0;">${esc(p).replace(/\n/g, "<br>")}</p>`).join("\n");
+  return render("_shell", { ...vars, body_html });
+}
+
+export function preview(name, vars = {}, text) {
+  const html = text ? shell(text, vars) : render(name, vars);
+  name = text ? "_note" : name;
   const out = path.join(DIR, "previews", `${path.basename(name).replace(/\.html?$/i, "")}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, html);
@@ -161,7 +180,8 @@ function lastSentTo(addr) {
   return hits.length ? hits[hits.length - 1].at : null;
 }
 
-export async function send({ template, vars = {}, html, to, cc, bcc, subject, attachments = [], confirm = false, toSelf = false, followUp = false }) {
+export async function send({ template, vars = {}, html, text, to, cc, bcc, subject, attachments = [], confirm = false, toSelf = false, followUp = false }) {
+  if (!html && !template && !text) throw new Error("Give a template, or text for a quick note");
   if (!subject) throw new Error("subject is required");
   const me = await whoami();
   const rcpt = toSelf ? [me.mailbox] : list(to);
@@ -182,7 +202,7 @@ export async function send({ template, vars = {}, html, to, cc, bcc, subject, at
     }
   }
 
-  const body = html ?? render(template, vars);
+  const body = html ?? (template ? render(template, vars) : shell(text, vars));
   const files = attachments.map((f) => {
     const buf = fs.readFileSync(f);
     if (buf.length > 3 * 1024 * 1024) throw new Error(`${path.basename(f)} is over 3 MB`);
@@ -194,7 +214,7 @@ export async function send({ template, vars = {}, html, to, cc, bcc, subject, at
       toRecipients: rcpt.map(addr), ccRecipients: list(cc).map(addr), bccRecipients: list(bcc).map(addr),
       ...(files.length ? { attachments: files } : {}) },
     saveToSentItems: true }) });
-  fs.appendFileSync(LOG, JSON.stringify({ at: new Date().toISOString(), day: new Date().toISOString().slice(0, 10), from: me.mailbox, to: rcpt, cc: list(cc), bcc: list(bcc).length, subject, template: template || null, ...(toSelf ? { test: true } : {}) }) + "\n");
+  fs.appendFileSync(LOG, JSON.stringify({ at: new Date().toISOString(), day: new Date().toISOString().slice(0, 10), from: me.mailbox, to: rcpt, cc: list(cc), bcc: list(bcc).length, subject, template: template || (text ? "_shell" : null), ...(toSelf ? { test: true } : {}) }) + "\n");
   return { ok: true, from: me.mailbox, to: rcpt, subject, savedToSentItems: true };
 }
 
@@ -204,17 +224,18 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const opt = (k) => { const i = rest.indexOf(`--${k}`); return i >= 0 ? rest[i + 1] : undefined; };
   const many = (k) => rest.flatMap((v, i) => (rest[i - 1] === `--${k}` ? [v] : []));
   const vars = () => (opt("vars") ? JSON.parse(fs.readFileSync(opt("vars"), "utf8")) : {});
+  const note = () => (opt("text") ? fs.readFileSync(opt("text"), "utf8") : undefined);
   const run = {
     login: () => login(),
     whoami: () => whoami(),
     templates: () => listTemplates(),
     history: () => history({ to: opt("to") }),
     suppress: () => suppress(rest[0]),
-    preview: () => preview(opt("template"), vars()),
-    test: () => send({ template: opt("template"), vars: vars(), subject: opt("subject") || "[TEST] template preview", toSelf: true }),
-    send: () => send({ template: opt("template"), vars: vars(), to: opt("to"), cc: opt("cc"), bcc: opt("bcc"), subject: opt("subject"),
+    preview: () => preview(opt("template"), vars(), note()),
+    test: () => send({ template: opt("template"), text: note(), vars: vars(), subject: opt("subject") || "[TEST] template preview", toSelf: true }),
+    send: () => send({ template: opt("template"), text: note(), vars: vars(), to: opt("to"), cc: opt("cc"), bcc: opt("bcc"), subject: opt("subject"),
       attachments: many("attach"), confirm: rest.includes("--yes"), followUp: rest.includes("--follow-up") }),
   }[cmd];
-  if (!run) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 18).map((l) => l.replace(/^\/\/ ?/, "")).join("\n")); process.exit(1); }
+  if (!run) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 20).map((l) => l.replace(/^\/\/ ?/, "")).join("\n")); process.exit(1); }
   Promise.resolve().then(run).then((r) => console.log(JSON.stringify(r, null, 2))).catch((e) => { console.error("✗", e.message); process.exit(1); });
 }

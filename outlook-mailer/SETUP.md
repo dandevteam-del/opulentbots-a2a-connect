@@ -21,6 +21,7 @@ packages: Microsoft's sign-in library `@azure/msal-node` 6.0.1 and the MCP SDK
 | G. Give yourself the mail tools | You | 2 min |
 | H. Test, then the first real send | You, with her approval | 5 min |
 | I. Report done on the hub | You | 1 min |
+| J. Make every email look like Great Impressions | You, with her approval | 20 min |
 
 ---
 
@@ -131,9 +132,9 @@ Restart Claude Code. `/mcp` should list **outlook-mailer** with 7 tools:
 |---|---|
 | `mail_whoami` | which mailbox is signed in |
 | `mail_templates` | templates and their fields |
-| `mail_preview` | fills a template, saves `previews\<name>.html` for Carolyn to open |
+| `mail_preview` | fills a template (or wraps a `text` note), saves a preview file for Carolyn to open |
 | `mail_test` | sends to **Carolyn only** |
-| `mail_send` | sends for real. Needs `confirm: true` |
+| `mail_send` | sends for real: a `template`, or a plain note as `text` wrapped in her shell. Needs `confirm: true` |
 | `mail_history` | who was emailed, when, and with what subject. **Check before every send** |
 | `mail_suppress` | adds an address or `@domain` to the do-not-email list |
 
@@ -173,6 +174,83 @@ Reply on hub task `df66f974-055d-4cfc-a211-63bf75fbbe6d` with the output of `nod
 and `node mailer.mjs templates`, and the date of the first test send. Don't include IDs, tokens or
 `.env` contents. If you're stuck, set the task to `TASK_STATE_INPUT_REQUIRED` with the exact error.
 
+## J. Make every email look like Great Impressions (how OpulentBots does it)
+
+OpulentBots sends email for two brands, Tiki Squeeze and Uncle George's, from one Outlook mailbox,
+and every email looks like its brand. Even a two-line reply. Here's how, and how to set up the same
+for Carolyn. It has three layers.
+
+### Layer 1: the shell, so quick notes look branded too
+
+The shell is Carolyn's email design **with the middle cut out**: her header and footer stay, and
+the message goes in between. Any plain note you send (a reply, "your order is ready", a quick
+question) is dropped into it automatically. Every email then looks like hers, not just the big
+templated ones.
+
+1. Start from Carolyn's own template (step F). Copy it to `templates\_shell.html`.
+2. Keep her header (logo, colors) and her footer. Delete everything in the middle, and put exactly
+   this where the message should go: `{{{body_html}}}` (three braces on each side).
+3. **The footer is her signature.** Put her name, title, address, phone, website and hours in it
+   (her email signature has all of these). The kit removes a typed "Thanks, Carolyn" from the end
+   of a note, so she never signs twice. **Don't write a sign-off in your notes.**
+4. No template from her yet? `templates\_shell.example.html` is a starter in Great Impressions'
+   colors, with her logo and the footer from her signature. Show Carolyn the preview. Only rename it
+   to `_shell.html` if she says it looks right.
+5. Check it: put a short note in `note.txt`, run `node mailer.mjs preview --text note.txt`, then
+   `node mailer.mjs test --text note.txt`, and have Carolyn look at it in Outlook on her computer
+   and her phone.
+
+Sending a quick note: `mail_send` with `text` (the plain note) instead of `template`. Same rules:
+preview, her OK, then `confirm: true`.
+
+### Layer 2: one template per kind of email
+
+For anything she sends again and again, make a full template, one per situation, all built from
+the same design. OpulentBots keeps one per situation for each brand (first contact, follow-up,
+reply, and so on). A print shop usually needs these:
+
+| Template file | When |
+|---|---|
+| `quote-sent.html` | sending a quote: what's included, price, how long it's good for |
+| `quote-followup.html` | a quote hasn't been answered after a few days |
+| `proof-ready.html` | a proof is ready to approve |
+| `order-ready.html` | an order is ready for pickup or has shipped |
+| `invoice-reminder.html` | an invoice is past due (with the pay link) |
+| `thank-you.html` | after a job is picked up or paid |
+| `past-client-checkin.html` | checking in with a past customer from the CRM (seasonal: holiday cards, graduation, memorial programs) |
+
+Ask Carolyn which ones she wants, and **use her own wording**. If she has emails she's sent before
+for these, start from those.
+
+**Fields:** use the same names in every template, so the CRM data fits all of them:
+`{{first_name}}`, `{{company}}`, `{{item}}`, `{{quantity}}`, `{{due_date}}`, `{{invoice_number}}`,
+`{{amount}}`, `{{message}}`. For the pay link, write the real address into the template:
+`https://great-impressions-crm.vercel.app/pay`. The kit **refuses to send** if any field is left
+empty, so a "Hi ," can never go out.
+
+### Layer 3: pick the right one every time
+
+Write `templates\README.md`: one line per template saying **when** to use it and which fields it
+needs. Before every email, check that list. Use the matching template; if nothing matches, use the
+shell with a plain note. OpulentBots' system does the same: each situation has its template, so the
+wrong one never goes to a customer.
+
+### Her own emails in Outlook
+
+When Carolyn writes an email herself in Outlook, it should match too. Help her set her Outlook
+signature to the same footer: **Outlook → Settings → Mail → Compose and reply → Email signature**
+(new Outlook: **Settings → Accounts → Signatures**). Paste her name, title, address, phone, website
+and hours, and turn it on for new messages and replies.
+
+### What stays the same
+
+All the rules above still apply to every email, template or note: her OK on each send, the
+do-not-email list, no repeat email to one person within 3 days, and the daily limits.
+
+**One limit to know:** the kit sends **new** emails. It doesn't reply inside an existing Outlook
+conversation. For a reply in the same thread, Carolyn clicks Reply in Outlook, or you send a new
+email with `Re: <the original subject>`.
+
 ## Troubleshooting
 
 | Message | Fix |
@@ -185,5 +263,6 @@ and `node mailer.mjs templates`, and the date of the first test send. Don't incl
 | `Template "x" needs: …` | Provide every listed field |
 | `already emailed … in the last 3 days` | Working as intended. Ask Carolyn whether she wants this follow-up |
 | `… is on the do-not-email list` | Working as intended. Don't send. Tell Carolyn |
+| `No templates/_shell.html yet` | Do part J, layer 1, or send with a template |
 | `outlook-mailer` not in `/mcp` | Wrong path in step G, Node missing, or Claude Code wasn't restarted |
 | Test lands in Junk | Keep it personal, not all images, a real reply-to. Ask the recipient to mark it "not junk" once |
