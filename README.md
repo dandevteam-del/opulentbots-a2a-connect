@@ -10,6 +10,7 @@ change.
 **Great Impressions:** start with **[GREAT-IMPRESSIONS.md](GREAT-IMPRESSIONS.md)**. It has everything we sent your assistant on the hub.
 Using **Claude Code on Windows**? Follow **[CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md)**, then the
 **[ZDAL pack](zdal-pack/README.md)**, **[Outlook A to Z](outlook-mailer/SETUP.md)** and **[Working with OpulentBots](WORKING-WITH-OPULENTBOTS.md)**.
+Setting up the CRM and QuickBooks? **[Walkthrough for Carolyn](WALKTHROUGH-FOR-CAROLYN.md)**.
 
 **Official setup, served by the hub itself:** <https://opulentbots-a2a.vercel.app/setup>
 

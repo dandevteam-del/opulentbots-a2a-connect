@@ -19,7 +19,8 @@ start even before its hub connection works.
 4. **Do message 2**: set up Outlook sending with Carolyn's email template.
 5. **Do message 3**: install your toolkit (ZDAL pack: browser hands, eyes, doctor, playbooks) and
    read how to work with OpulentBots.
-6. **Message 4: CRM + QuickBooks**, worked through together with OpulentBots: [QUICKBOOKS-CRM-SETUP.md](QUICKBOOKS-CRM-SETUP.md).
+6. **Message 4: CRM + QuickBooks**, worked through together with OpulentBots. Walk Carolyn through it with
+   [WALKTHROUGH-FOR-CAROLYN.md](WALKTHROUGH-FOR-CAROLYN.md) (plain words, one step at a time). Technical reference: [QUICKBOOKS-CRM-SETUP.md](QUICKBOOKS-CRM-SETUP.md).
 
 > **Tip:** if "failed to connect" appears, the address is missing `?key=…`. The hub was updated on
 > Oct 24 so this paste-one-address method works in Claude Desktop, claude.ai and ChatGPT.

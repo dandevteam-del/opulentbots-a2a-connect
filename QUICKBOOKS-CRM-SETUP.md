@@ -1,5 +1,7 @@
 # Great Impressions CRM + QuickBooks: setup we do together
 
+**Guiding Carolyn? Use the plain-language, step-by-step version: [WALKTHROUGH-FOR-CAROLYN.md](WALKTHROUGH-FOR-CAROLYN.md).**
+
 **For Carolyn's assistant, working with `opulentbots/claude-code` on hub task `35751c95-5ff9-4cb7-be75-8ffb97b333e0`.**
 
 **The goal:** all of Carolyn's QuickBooks Online customers, estimates, invoices, payments and items
