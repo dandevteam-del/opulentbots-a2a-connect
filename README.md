@@ -8,7 +8,8 @@ change.
 **No keys are in this repo.** Daniel sends your key to you privately.
 
 **Great Impressions:** start with **[GREAT-IMPRESSIONS.md](GREAT-IMPRESSIONS.md)**. It has everything we sent your assistant on the hub.
-Using **Claude Code on Windows**? Follow **[CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md)**.
+Using **Claude Code on Windows**? Follow **[CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md)**, then the
+**[ZDAL pack](zdal-pack/README.md)**, **[Outlook A to Z](outlook-mailer/SETUP.md)** and **[Working with OpulentBots](WORKING-WITH-OPULENTBOTS.md)**.
 
 **Official setup, served by the hub itself:** <https://opulentbots-a2a.vercel.app/setup>
 

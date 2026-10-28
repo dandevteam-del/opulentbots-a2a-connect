@@ -11,6 +11,8 @@
 //   node mailer.mjs preview  --template t --vars v.json [--subject s]      writes previews/<t>.html to open
 //   node mailer.mjs send     --template t --vars v.json --to a@b.com --subject s [--cc ..] [--bcc ..] [--attach f ...] --yes
 //   node mailer.mjs test     --template t --vars v.json [--subject s]      sends to yourself only
+//   node mailer.mjs history  [--to a@b.com]          what was sent, to whom, when
+//   node mailer.mjs suppress a@b.com|@domain.com     never email this address (or domain) again
 //
 // Templates: drop an .html file in templates/. Write {{field}} where text should be filled in
 // (HTML-escaped) and {{{field}}} for trusted HTML. Sending refuses if any field is left unfilled.
@@ -34,6 +36,8 @@ try {
 } catch {}
 const DAILY_CAP = Number(process.env.MAILER_DAILY_CAP || 50);
 const MAX_RCPT = Number(process.env.MAILER_MAX_RECIPIENTS || 10);
+const COOLDOWN_DAYS = Number(process.env.MAILER_COOLDOWN_DAYS || 3);
+const SUPPRESS = path.join(DIR, "do-not-email.txt");
 
 // ── sign-in ────────────────────────────────────────────────────────────────────
 function app() {
@@ -126,7 +130,38 @@ function sentToday() {
   return fs.readFileSync(LOG, "utf8").split("\n").filter((l) => l.includes(`"day":"${day}"`)).length;
 }
 
-export async function send({ template, vars = {}, html, to, cc, bcc, subject, attachments = [], confirm = false, toSelf = false }) {
+// ── send-guard: one person, not a list ────────────────────────────────────────────
+// Same rules OpulentBots runs on its own mail: never email anyone on the do-not-email list, and
+// don't email the same person again within MAILER_COOLDOWN_DAYS unless the owner says this is a
+// deliberate follow-up (followUp:true). The guard is per ADDRESS across every email sent.
+const norm = (a) => String(a || "").trim().toLowerCase();
+function suppressed() {
+  if (!fs.existsSync(SUPPRESS)) return [];
+  return fs.readFileSync(SUPPRESS, "utf8").split("\n").map((l) => norm(l.replace(/#.*/, ""))).filter(Boolean);
+}
+export function suppress(entry) {
+  const e = norm(entry);
+  if (!EMAIL.test(e) && !/^@[^\s@]+\.[^\s@]+$/.test(e)) throw new Error(`"${entry}" is not an email address or an @domain`);
+  if (!suppressed().includes(e)) fs.appendFileSync(SUPPRESS, `${e}  # added ${new Date().toISOString().slice(0, 10)}\n`);
+  return { ok: true, suppressed: e };
+}
+const blocked = (a, list) => list.includes(norm(a)) || list.includes("@" + norm(a).split("@")[1]);
+function sentLog() {
+  if (!fs.existsSync(LOG)) return [];
+  return fs.readFileSync(LOG, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+}
+export function history({ to } = {}) {
+  const want = to ? norm(to) : null;
+  return sentLog().filter((r) => !want || [...r.to, ...(r.cc || [])].map(norm).includes(want))
+    .map((r) => ({ at: r.at, to: r.to, cc: r.cc, subject: r.subject, template: r.template })).slice(-100);
+}
+function lastSentTo(addr) {
+  const a = norm(addr);
+  const hits = sentLog().filter((r) => !r.test && [...r.to, ...(r.cc || [])].map(norm).includes(a));
+  return hits.length ? hits[hits.length - 1].at : null;
+}
+
+export async function send({ template, vars = {}, html, to, cc, bcc, subject, attachments = [], confirm = false, toSelf = false, followUp = false }) {
   if (!subject) throw new Error("subject is required");
   const me = await whoami();
   const rcpt = toSelf ? [me.mailbox] : list(to);
@@ -137,6 +172,15 @@ export async function send({ template, vars = {}, html, to, cc, bcc, subject, at
   if (all.length > MAX_RCPT) throw new Error(`${all.length} recipients is over the limit of ${MAX_RCPT} per email (MAILER_MAX_RECIPIENTS). Send separately.`);
   if (!toSelf && !confirm) throw new Error("Not sent: confirm is required. Show the owner the preview and recipients first, then send with confirm (CLI: --yes).");
   if (sentToday() >= DAILY_CAP) throw new Error(`Daily cap of ${DAILY_CAP} emails reached (MAILER_DAILY_CAP).`);
+  if (!toSelf) {
+    const sup = suppressed();
+    const no = all.filter((a) => blocked(a, sup));
+    if (no.length) throw new Error(`Not sent: ${no.join(", ")} ${no.length > 1 ? "are" : "is"} on the do-not-email list (do-not-email.txt).`);
+    if (!followUp) {
+      const recent = all.map((a) => [a, lastSentTo(a)]).filter(([, at]) => at && Date.now() - Date.parse(at) < COOLDOWN_DAYS * 864e5);
+      if (recent.length) throw new Error(`Not sent: already emailed ${recent.map(([a, at]) => `${a} (${at.slice(0, 10)})`).join(", ")} in the last ${COOLDOWN_DAYS} days. If the owner wants this follow-up, send again with followUp (CLI: --follow-up).`);
+    }
+  }
 
   const body = html ?? render(template, vars);
   const files = attachments.map((f) => {
@@ -150,7 +194,7 @@ export async function send({ template, vars = {}, html, to, cc, bcc, subject, at
       toRecipients: rcpt.map(addr), ccRecipients: list(cc).map(addr), bccRecipients: list(bcc).map(addr),
       ...(files.length ? { attachments: files } : {}) },
     saveToSentItems: true }) });
-  fs.appendFileSync(LOG, JSON.stringify({ at: new Date().toISOString(), day: new Date().toISOString().slice(0, 10), from: me.mailbox, to: rcpt, cc: list(cc), bcc: list(bcc).length, subject, template: template || null }) + "\n");
+  fs.appendFileSync(LOG, JSON.stringify({ at: new Date().toISOString(), day: new Date().toISOString().slice(0, 10), from: me.mailbox, to: rcpt, cc: list(cc), bcc: list(bcc).length, subject, template: template || null, ...(toSelf ? { test: true } : {}) }) + "\n");
   return { ok: true, from: me.mailbox, to: rcpt, subject, savedToSentItems: true };
 }
 
@@ -164,11 +208,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     login: () => login(),
     whoami: () => whoami(),
     templates: () => listTemplates(),
+    history: () => history({ to: opt("to") }),
+    suppress: () => suppress(rest[0]),
     preview: () => preview(opt("template"), vars()),
     test: () => send({ template: opt("template"), vars: vars(), subject: opt("subject") || "[TEST] template preview", toSelf: true }),
     send: () => send({ template: opt("template"), vars: vars(), to: opt("to"), cc: opt("cc"), bcc: opt("bcc"), subject: opt("subject"),
-      attachments: many("attach"), confirm: rest.includes("--yes") }),
+      attachments: many("attach"), confirm: rest.includes("--yes"), followUp: rest.includes("--follow-up") }),
   }[cmd];
-  if (!run) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 16).map((l) => l.replace(/^\/\/ ?/, "")).join("\n")); process.exit(1); }
+  if (!run) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 18).map((l) => l.replace(/^\/\/ ?/, "")).join("\n")); process.exit(1); }
   Promise.resolve().then(run).then((r) => console.log(JSON.stringify(r, null, 2))).catch((e) => { console.error("✗", e.message); process.exit(1); });
 }

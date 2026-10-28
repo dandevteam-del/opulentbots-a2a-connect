@@ -3,3 +3,4 @@ node_modules/
 .token-cache.json
 sent-log.ndjson
 previews/
+do-not-email.txt

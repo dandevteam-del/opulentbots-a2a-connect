@@ -17,6 +17,8 @@ start even before its hub connection works.
 2. **Reply to message 1** (below) on the hub, to confirm the connection.
 3. **We send your permanent key** on that same hub task. Switch to it, and the temporary key is turned off.
 4. **Do message 2**: set up Outlook sending with Carolyn's email template.
+5. **Do message 3**: install your toolkit (ZDAL pack: browser hands, eyes, doctor, playbooks) and
+   read how to work with OpulentBots.
 
 > **Tip:** if "failed to connect" appears, the address is missing `?key=…`. The hub was updated on
 > Oct 24 so this paste-one-address method works in Claude Desktop, claude.ai and ChatGPT.
@@ -55,26 +57,26 @@ already has Microsoft 365 DKIM, SPF and DMARC set up, so it should deliver clean
 automation, no stored password. Two pinned packages only: `@azure/msal-node` 6.0.1 and
 `@modelcontextprotocol/sdk` 1.27.1 (install with `npm ci`).
 
-**Steps** (details in SETUP.md):
-1. Guide Carolyn (or her Microsoft 365 admin) through registering an app at entra.microsoft.com:
-   single tenant, "Allow public client flows" = Yes, delegated Microsoft Graph permissions
-   Mail.Send + User.Read + offline_access, then "Grant admin consent". Put the Tenant ID and Client ID
-   in `outlook-mailer/.env`.
-2. `git clone` this repo, `cd outlook-mailer`, `npm ci`, `cp .env.example .env`.
-3. `node mailer.mjs login`: show Carolyn the code; she signs in at microsoft.com/devicelogin with the
-   mailbox that should send. Confirm with `node mailer.mjs whoami`.
-4. Ask Carolyn for her email template as an .html file. Save it in `outlook-mailer/templates/<name>.html`.
-   Mark the changing text with `{{fields}}` (e.g. `{{first_name}}`, `{{message}}`). Keep her design
-   exactly as she made it. Images must be `https://` links.
-5. Add the MCP server to your app (Claude Desktop config: command `node`, args
-   `["<full path>/outlook-mailer/mcp-server.mjs"]`) and restart. You get tools `mail_whoami`,
-   `mail_templates`, `mail_preview`, `mail_test`, `mail_send`.
-6. `mail_preview` → show Carolyn; `mail_test` → sends to her own inbox only; then `mail_send` with
-   `confirm: true` **only** after she approves that exact email and recipient list.
-
-**Rules:** Carolyn approves every real send. Limits are 10 recipients per email and 50 a day. This is
-for business email (quotes, proofs, order updates), not bulk newsletters.
+**Steps:** follow the A to Z in [outlook-mailer/SETUP.md](outlook-mailer/SETUP.md) (updated Oct 28 for Claude
+Code on Windows). It covers what's already set up on greatimpress.com, registering the mail app,
+signing in, preparing her template for Outlook, the 7 mail tools, and the send rules: Carolyn approves
+every send, a do-not-email list, no repeat emails to one person within 3 days, and caps.
 
 **When done:** reply on hub task `df66f974-055d-4cfc-a211-63bf75fbbe6d` with the output of
 `node mailer.mjs whoami` and `node mailer.mjs templates` (no keys, tokens or .env contents). If stuck,
 set the task to INPUT_REQUIRED with the exact error message. Before the hub works, email Daniel the error.
+
+---
+
+## Message 3: Your toolkit, and how to work with OpulentBots
+
+Hub task `TASK3`, from `opulentbots/claude-code`, sent 2026-10-28.
+
+- **[zdal-pack/README.md](zdal-pack/README.md):** hands and eyes on Windows. Browser control through Microsoft's
+  Playwright tool (pinned, its own Edge profile), the ZDAL loop (snapshot → act → check → report),
+  `doctor.ps1`, `screenshot.ps1`, playbooks, and the rules.
+- **[WORKING-WITH-OPULENTBOTS.md](WORKING-WITH-OPULENTBOTS.md):** how to request work, follow progress,
+  answer questions and approve results on the hub.
+
+**When done:** reply on that task with the output of `doctor.ps1` (it never prints keys).
+
