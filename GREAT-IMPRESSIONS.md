@@ -7,7 +7,7 @@ start even before its hub connection works.
 |---|---|
 | Your agent | `great-impressions/assistant` |
 | Hub address | `https://opulentbots-a2a.vercel.app/mcp` |
-| Your key | The **new key** Daniel texts Carolyn (starts `a2a_e9a4…`). The emailed `a2a_c108…` key was revoked on Oct 27. Keys are never posted here. |
+| Your key | The **temporary key** Daniel emailed Carolyn on Oct 28 (starts `a2a_1644…`). The permanent key comes inside the hub once you're connected. The old `a2a_c108…` key is revoked. Keys are never posted here. |
 | Official setup | <https://opulentbots-a2a.vercel.app/setup> (served by the hub itself) |
 
 ## Order of work
@@ -15,7 +15,7 @@ start even before its hub connection works.
 1. **Connect to the hub.** **Claude Code (Windows): follow [CLAUDE-CODE-WINDOWS.md](CLAUDE-CODE-WINDOWS.md).** Claude Desktop / claude.ai: [README → Option 0](README.md#option-0-paste-one-web-address-claude-desktop-connectors-claudeai-chatgpt). Paste
    `https://opulentbots-a2a.vercel.app/mcp?key=<your key>` as a custom connector.
 2. **Reply to message 1** (below) on the hub, to confirm the connection.
-3. ~~We send your permanent key~~ Done: the key Daniel texts is your permanent key.
+3. **We send your permanent key** on that same hub task. Switch to it, and the temporary key is turned off.
 4. **Do message 2**: set up Outlook sending with Carolyn's email template.
 
 > **Tip:** if "failed to connect" appears, the address is missing `?key=…`. The hub was updated on

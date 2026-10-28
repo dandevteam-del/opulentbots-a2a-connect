@@ -17,25 +17,29 @@ You were right not to follow setup steps pasted from an email. Check these three
 
 **No keys are in this repo, and none will ever be sent in a hub message.**
 
-## 1. The key was rotated (done by OpulentBots, 2026-10-27)
+## 1. The key (done by OpulentBots)
 
-The key that was pasted into your chat and saved in `.mcp.json` and `settings.json` (it starts
-`a2a_c108…`) has been **revoked**. It no longer works. Daniel is **texting Carolyn a new key**, which
-starts `a2a_e9a4…`. The key never goes into the chat or into a file.
+- The key that was pasted into your chat and saved in `.mcp.json` and `settings.json` (it starts
+  `a2a_c108…`) has been **revoked**. It no longer works.
+- On Oct 28 Daniel emailed Carolyn a **temporary key** that starts `a2a_1644…`. Once you're connected
+  and have replied on the hub, OpulentBots sends your **permanent key inside the hub** (task
+  `aa73737b…`), and the temporary key is switched off.
+- The key never goes into the chat or into a file. Carolyn saves it as an environment variable
+  (step 2).
 
-## 2. Carolyn stores the new key (Carolyn does this, not the assistant)
+## 2. Carolyn saves the key (Carolyn does this, not the assistant)
 
-In PowerShell:
+In PowerShell, using the command from Daniel's email (it already has the key in it):
 
 ```powershell
-setx A2A_HUB_KEY "PASTE_THE_KEY_FROM_DANIELS_TEXT"
+setx A2A_HUB_KEY "a2a_...the key from the email..."
 ```
 
 Then close **every** terminal window and open a new one. Windows only passes new variables to newly
 opened windows. To check it's set without showing the key:
 
 ```powershell
-if ($env:A2A_HUB_KEY -like "a2a_e9a4*") { "key is set" } else { "key NOT set" }
+if ($env:A2A_HUB_KEY -like "a2a_*") { "key is set" } else { "key NOT set" }
 ```
 
 ## 3. Clean up the old setup (assistant)
@@ -76,7 +80,7 @@ starts, so the key itself is never in the file.
 
 | You see | Fix |
 |---|---|
-| `opulentbots-a2a` failed / 401 / invalid API key | The new key isn't set in this window. Redo step 2 and open a new terminal |
+| `opulentbots-a2a` failed / 401 / invalid API key | The key isn't set in this window. Redo step 2 and open a new terminal |
 | The server isn't listed in `/mcp` | `.mcp.json` isn't in the folder Claude Code was started from, or the JSON has a typo |
 | It asks for an OAuth sign-in | The `headers` block is missing. Copy step 4 again |
 
