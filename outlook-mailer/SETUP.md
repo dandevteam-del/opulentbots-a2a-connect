@@ -53,6 +53,10 @@ Then she closes and reopens the terminal.
 
 ## C. Register the mail app (Carolyn, you guide her)
 
+> **Stuck here, or Carolyn isn't the Microsoft 365 admin? Skip C, E and G and use Part L instead.**
+> Part L sends the same branded email with Microsoft's own PowerShell module, so nothing needs
+> registering. The kit still builds the email; only the sending step changes.
+
 This lets the kit send **only as the person who signs in** (delegated `Mail.Send`). It cannot read
 anyone's mailbox and needs no client secret.
 
@@ -318,6 +322,55 @@ wants to send it by hand.
 **When done:** reply on hub task `df66f974-055d-4cfc-a211-63bf75fbbe6d`: *"quick-question template
 approved by Carolyn, test checked on computer and phone, opt-out line: <kept / her wording>, saved
 in Outlook: <classic .oft / not needed>."*
+
+## L. Send without registering an app (PowerShell route)
+
+Use this when Part C is blocked: no admin account, the consent screen fails, or `node mailer.mjs
+login` errors. The email is identical. The kit builds it (template, shell, footer, unfilled-field
+check) and **Microsoft's own Graph PowerShell module** sends it as HTML from Carolyn's mailbox, so
+it lands in her Sent Items, signed by Microsoft. Same rules: preview first, her OK, do-not-email
+list, nobody twice in 3 days, 10 recipients and 50 a day. It shares `sent-log.ndjson` with the
+kit, so `node mailer.mjs history` shows these sends too.
+
+**Why plain Outlook tools aren't enough:** a branded email is an HTML document. It only arrives
+branded if it's handed to Outlook *as HTML through an API* (Graph `sendMail` with
+`contentType: HTML`). Typing or pasting it into a new message, or sending through a chat
+connector that writes plain text, drops the layout and images. That's how OpulentBots sends too:
+the HTML file is built from a template, then posted as the message body.
+
+**L1. One-time install and sign-in** (PowerShell, as Carolyn's Windows user):
+```powershell
+Install-Module Microsoft.Graph.Users.Actions -Scope CurrentUser    # answer Y if asked to trust PSGallery
+Connect-MgGraph -Scopes "Mail.Send","User.Read" -UseDeviceCode -NoWelcome
+```
+Show Carolyn the code; she signs in at https://microsoft.com/devicelogin with **cwalker@greatimpress.com**
+and accepts "Send mail as you". If Microsoft says an **admin must approve**, stop and set the hub
+task to INPUT_REQUIRED with that exact message. Don't try other accounts.
+Check: `(Get-MgContext).Account` prints her address.
+Sign-in lasts a while; when a send says "Not signed in", run `Connect-MgGraph` again.
+
+**L2. Build and look** (no sign-in needed):
+```powershell
+cd $HOME\opulentbots-a2a-connect\outlook-mailer
+git pull
+npm ci                                    # once
+node mailer.mjs preview --template quick-question --vars templates\quick-question.vars.json
+```
+Open the file it prints in Edge and show Carolyn.
+
+**L3. Test to her own inbox, then send with her OK:**
+```powershell
+.\send-ps.ps1 -Template quick-question -Vars templates\quick-question.vars.json -Subject "Quick question..." -Test
+# after she approves this exact email and person:
+.\send-ps.ps1 -Template quick-question -Vars vars\sam.json -To sam@example.com -Subject "Quick question..." -Yes
+# a short branded note (wrapped in templates\_shell.html):
+.\send-ps.ps1 -Text note.txt -To sam@example.com -Subject "Your proof is ready" -Yes
+```
+If PowerShell says scripts are disabled, run once:
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+Make one vars file per person (copy `templates\quick-question.vars.json`, change `first_name`).
+
+**Report on the hub** with the output of the `-Test` line (no codes or tokens).
 
 ## Troubleshooting
 
